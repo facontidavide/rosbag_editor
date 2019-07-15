@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rosbag_editor</name>
+  <version>0.0.0</version>
+  <description>The rosbag_editor package</description>
+  <maintainer email="davide.faconti@gmail.com">dfaconti</maintainer>
+  <license>MIT</license>
+
+  <url type="website">http://wiki.ros.org/rosbag_editor</url>
+
+
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>qtbase5-dev</build_depend>
+  <build_depend>rosbag</build_depend>
+  <build_depend>rosbag_storage</build_depend>
+  <build_depend>roscpp</build_depend>
+
+  <build_export_depend>qtbase5-dev</build_export_depend>
+  <build_export_depend>rosbag</build_export_depend>
+  <build_export_depend>rosbag_storage</build_export_depend>
+  <build_export_depend>roscpp</build_export_depend>
+
+  <exec_depend>qtbase5-dev</exec_depend>
+  <exec_depend>rosbag</exec_depend>
+  <exec_depend>rosbag_storage</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
