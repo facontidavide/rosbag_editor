@@ -130,6 +130,17 @@ void RosbagEditor::on_pushButtonMove_pressed()
 
     ui->listWidgetOutput->setEnabled( true );
     ui->pushButtonSave->setEnabled( ui->listWidgetOutput->count() );
+
+    ui->dateTimeOutputBegin->setEnabled( true );
+    ui->dateTimeOutputBegin->setDateTimeRange(ui->dateTimeInputBegin->dateTime(),
+                                              ui->dateTimeInputEnd->dateTime() );
+    ui->dateTimeOutputBegin->setDateTime(ui->dateTimeInputBegin->dateTime());
+
+    ui->dateTimeOutputEnd->setEnabled( true );
+    ui->dateTimeOutputEnd->setDateTimeRange(ui->dateTimeInputBegin->dateTime(),
+                                            ui->dateTimeInputEnd->dateTime() );
+    ui->dateTimeOutputEnd->setDateTime(ui->dateTimeInputEnd->dateTime());
+
 }
 
 void RosbagEditor::on_tableWidgetInput_itemSelectionChanged()
@@ -153,6 +164,7 @@ void RosbagEditor::on_pushButtonRemove_pressed()
     }
 
     ui->pushButtonSave->setEnabled( ui->listWidgetOutput->count() );
+    ui->listWidgetOutput->sortItems();
 }
 
 void RosbagEditor::on_pushButtonSave_pressed()
@@ -192,7 +204,12 @@ void RosbagEditor::on_pushButtonSave_pressed()
         topics.push_back( item->text().toStdString() );
     }
 
-    rosbag::View bag_view( _bag, rosbag::TopicQuery(topics));
+    double begin_time = std::floor(-0.001 + 0.001*static_cast<double>(ui->dateTimeOutputBegin->dateTime().toMSecsSinceEpoch()));
+    double end_time   = std::ceil(  0.001 +  0.001*static_cast<double>(ui->dateTimeOutputEnd->dateTime().toMSecsSinceEpoch()));
+
+
+    rosbag::View bag_view( _bag, rosbag::TopicQuery(topics),
+                          ros::Time( begin_time ), ros::Time( end_time ) );
 
     for(const rosbag::MessageInstance& msg: bag_view)
     {
@@ -205,5 +222,21 @@ void RosbagEditor::on_pushButtonSave_pressed()
     if( ret == QMessageBox::Close )
     {
         this->close();
+    }
+}
+
+void RosbagEditor::on_dateTimeOutputEnd_dateTimeChanged(const QDateTime &dateTime)
+{
+    if( ui->dateTimeOutputBegin->dateTime() > dateTime  )
+    {
+        ui->dateTimeOutputBegin->setDateTime( dateTime );
+    }
+}
+
+void RosbagEditor::on_dateTimeOutputBegin_dateTimeChanged(const QDateTime &dateTime)
+{
+    if( ui->dateTimeOutputEnd->dateTime() < dateTime  )
+    {
+        ui->dateTimeOutputEnd->setDateTime( dateTime );
     }
 }

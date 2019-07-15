@@ -34,6 +34,10 @@ private slots:
 
     void on_pushButtonSave_pressed();
 
+    void on_dateTimeOutputEnd_dateTimeChanged(const QDateTime &dateTime);
+
+    void on_dateTimeOutputBegin_dateTimeChanged(const QDateTime &dateTime);
+
 private:
     Ui::RosbagEditor *ui;
     QString _loade_filename;
