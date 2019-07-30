@@ -21,6 +21,7 @@ RosbagEditor::RosbagEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::RosbagEditor)
 {
+    QApplication::setWindowIcon(QIcon("://rosbag_editor.png"));
     QSettings settings;
 
     restoreGeometry(settings.value("RosbagEditor/geometry").toByteArray());

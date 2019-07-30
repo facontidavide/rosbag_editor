@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 SET(CMAKE_AUTOUIC ON)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
@@ -44,6 +45,7 @@ add_executable(rosbag_editor
     src/main.cpp
     src/rosbag_editor.cpp
     src/rosbag_editor.ui
+    desktop/resources.qrc
     )
 
 ## Add cmake target dependencies of the executable
@@ -61,6 +63,76 @@ add_dependencies(rosbag_editor ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPO
 #############
 ## Install ##
 #############
+
+if("${CMAKE_INSTALL_PREFIX}" MATCHES "^/opt/")
+  # Handle release case
+  set(DESKTOP_APP_DIR "/usr/share/applications")
+  set(DESKTOP_ICON_DIR "/usr/share/icons")
+else()
+  set(DESKTOP_APP_DIR "$ENV{HOME}/.local/share/applications")
+  set(DESKTOP_ICON_DIR ${DESKTOP_APP_DIR})
+  set(DESKTOP_APP_SUFFIX " (local)")
+endif()
+set(ROS_DISTRO $ENV{ROS_DISTRO})
+
+# Create directory for the desktop file/icon
+install(DIRECTORY DESTINATION
+  ${DESKTOP_APP_DIR}
+)
+install(DIRECTORY DESTINATION
+  ${DESKTOP_ICON_DIR}
+)
+
+# Configure / install bash launch script
+configure_file(
+  scripts/${PROJECT_NAME}.bash.in
+  scripts/${PROJECT_NAME}.bash
+  @ONLY
+)
+
+# Install bash script
+install(
+  PROGRAMS
+  ${CMAKE_CURRENT_BINARY_DIR}/scripts/${PROJECT_NAME}.bash
+  DESTINATION
+  ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# Configure / install desktop launchers
+if(DEFINED DESKTOP_APP_SUFFIX)
+  configure_file(
+    desktop/${PROJECT_NAME}.desktop.in
+    desktop/${PROJECT_NAME}_debug.desktop
+  )
+else()
+  configure_file(
+    desktop/${PROJECT_NAME}.desktop.in
+    desktop/${PROJECT_NAME}.desktop
+  )
+endif()
+if(DEFINED DESKTOP_APP_SUFFIX)
+  install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/desktop/${PROJECT_NAME}_debug.desktop
+    DESTINATION
+    ${DESKTOP_APP_DIR}
+  )
+else()
+  install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/desktop/${PROJECT_NAME}.desktop
+    DESTINATION
+    ${DESKTOP_APP_DIR}
+  )
+endif()
+
+# Install icon
+install(
+  FILES
+  desktop/${PROJECT_NAME}.png
+  DESTINATION
+  ${DESKTOP_ICON_DIR}
+)
 
 ## Mark executables and/or libraries for installation
 install(TARGETS rosbag_editor rosbag_editor
