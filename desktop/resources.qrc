@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>rosbag_editor.png</file>
+    </qresource>
+</RCC>
