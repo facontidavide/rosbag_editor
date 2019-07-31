@@ -88,7 +88,7 @@ void RosbagEditor::on_pushButtonLoad_pressed()
     QDateTime datetime_end = QDateTime::fromMSecsSinceEpoch( bag_view.getEndTime().toSec()*1000 );
     ui->dateTimeInputEnd->setDateTime(datetime_end);
 
-    for(int i = 0; i < connections.size(); i++ )
+    for(std::size_t i = 0; i < connections.size(); i++ )
     {
         const rosbag::ConnectionInfo* connection = connections[i];
         QString topic_name =  QString::fromStdString(connection->topic);
