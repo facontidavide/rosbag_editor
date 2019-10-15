@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Rosbag Editor${DESKTOP_APP_SUFFIX}
+Comment=Filter ROS bag files
+Exec=${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/${PROJECT_NAME}.bash
+Icon=${DESKTOP_ICON_DIR}/${PROJECT_NAME}.png
+Type=Application
+Categories=ROS;Development;Engineering;
+StartupNotify=true

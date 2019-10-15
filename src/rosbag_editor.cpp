@@ -21,6 +21,7 @@ RosbagEditor::RosbagEditor(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::RosbagEditor)
 {
+    QApplication::setWindowIcon(QIcon("://rosbag_editor.png"));
     QSettings settings;
 
     restoreGeometry(settings.value("RosbagEditor/geometry").toByteArray());
@@ -91,7 +92,7 @@ void RosbagEditor::on_pushButtonLoad_pressed()
 
     std::map<QString,QString> connections_ordered;
 
-    for(int i = 0; i < connections.size(); i++ )
+    for(std::size_t i = 0; i < connections.size(); i++ )
     {
       const rosbag::ConnectionInfo* connection = connections[i];
      connections_ordered.insert( std::make_pair(QString::fromStdString(connection->topic),
