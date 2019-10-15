@@ -16,6 +16,7 @@
 #include <QListWidget>
 #include <QStatusBar>
 #include <QFileInfo>
+#include <QProgressDialog>
 
 RosbagEditor::RosbagEditor(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +32,7 @@ RosbagEditor::RosbagEditor(QWidget *parent) :
     _previous_save_path = settings.value("RosbagEditor/prevSavePath", _previous_load_path).toString();
 
     ui->setupUi(this);
+    ui->radioNoCompression->setChecked(true);
 }
 
 void RosbagEditor::closeEvent(QCloseEvent *event)
@@ -205,6 +207,16 @@ void RosbagEditor::on_pushButtonSave_pressed()
 
     out_bag.open(filename.toStdString(), rosbag::bagmode::Write);
 
+    if( ui->radioNoCompression->isChecked()){
+      out_bag.setCompression( rosbag::CompressionType::Uncompressed );
+    }
+    else if( ui->radioLZ4->isChecked()){
+      out_bag.setCompression( rosbag::CompressionType::LZ4 );
+    }
+    else if( ui->radioBZ2->isChecked()){
+      out_bag.setCompression( rosbag::CompressionType::BZ2 );
+    }
+
     std::vector<std::string> topics;
 
     for(int i = 0; i < ui->listWidgetOutput->count(); ++i)
@@ -220,8 +232,22 @@ void RosbagEditor::on_pushButtonSave_pressed()
     rosbag::View bag_view( _bag, rosbag::TopicQuery(topics),
                           ros::Time( begin_time ), ros::Time( end_time ) );
 
+    QProgressDialog progress_dialog;
+    progress_dialog.setLabelText("Loading... please wait");
+    progress_dialog.setWindowModality( Qt::ApplicationModal );
+    progress_dialog.show();
+
+    int msg_count = 0;
+    progress_dialog.setRange(0, bag_view.size()-1);
+
     for(const rosbag::MessageInstance& msg: bag_view)
     {
+      if( msg_count++ %100 == 0)
+      {
+        progress_dialog.setValue( msg_count );
+        QApplication::processEvents();
+      }
+
       out_bag.write( msg.getTopic(), msg.getTime(), msg, msg.getConnectionHeader());
     }
     out_bag.close();

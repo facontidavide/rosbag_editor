@@ -2,6 +2,9 @@
 Changelog for package rosbag_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.2.0 (2019-10-15)
 ------------------
 * fixing few issues
