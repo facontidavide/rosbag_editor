@@ -88,20 +88,28 @@ void RosbagEditor::on_pushButtonLoad_pressed()
     QDateTime datetime_end = QDateTime::fromMSecsSinceEpoch( bag_view.getEndTime().toSec()*1000 );
     ui->dateTimeInputEnd->setDateTime(datetime_end);
 
+
+    std::map<QString,QString> connections_ordered;
+
     for(int i = 0; i < connections.size(); i++ )
     {
-        const rosbag::ConnectionInfo* connection = connections[i];
-        QString topic_name =  QString::fromStdString(connection->topic);
-        QString datatype   =  QString::fromStdString(connection->datatype);
+      const rosbag::ConnectionInfo* connection = connections[i];
+     connections_ordered.insert( std::make_pair(QString::fromStdString(connection->topic),
+                                                QString::fromStdString(connection->datatype) ) );
+    }
 
-        auto type_item = new QTableWidgetItem( datatype );
+    int row = 0;
+    for(const auto conn: connections_ordered )
+    {
+        auto type_item = new QTableWidgetItem( conn.second );
         QFont font = type_item->font();
         font.setPointSize(8);
         font.setItalic(true);
         type_item->setFont(font);
 
-        ui->tableWidgetInput->setItem(i, 0, new QTableWidgetItem( topic_name) );
-        ui->tableWidgetInput->setItem(i, 1, type_item);
+        ui->tableWidgetInput->setItem(row, 0, new QTableWidgetItem( conn.first ) );
+        ui->tableWidgetInput->setItem(row, 1, type_item);
+        row++;
     }
 }
 
@@ -213,7 +221,7 @@ void RosbagEditor::on_pushButtonSave_pressed()
 
     for(const rosbag::MessageInstance& msg: bag_view)
     {
-        out_bag.write( msg.getTopic(), msg.getTime(), msg);
+      out_bag.write( msg.getTopic(), msg.getTime(), msg, msg.getConnectionHeader());
     }
     out_bag.close();
 
