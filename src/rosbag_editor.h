@@ -38,12 +38,17 @@ private slots:
 
     void on_dateTimeOutputBegin_dateTimeChanged(const QDateTime &dateTime);
 
-private:
+    void on_checkBoxFilterTF_toggled(bool checked);
+
+    void on_pushButtonFilterTF_pressed();
+
+   private:
     Ui::RosbagEditor *ui;
     QString _loade_filename;
     QString _previous_load_path;
     QString _previous_save_path;
     rosbag::Bag _bag;
+    void changeEnabledWidgets();
 };
 
 #endif // ROSBAG_EDITOR_H

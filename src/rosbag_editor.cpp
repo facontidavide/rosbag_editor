@@ -17,6 +17,7 @@
 #include <QStatusBar>
 #include <QFileInfo>
 #include <QLineEdit>
+#include <QCheckBox>
 #include <QProgressDialog>
 
 RosbagEditor::RosbagEditor(QWidget *parent) :
@@ -117,6 +118,19 @@ void RosbagEditor::on_pushButtonLoad_pressed()
     }
 }
 
+void RosbagEditor::changeEnabledWidgets()
+{
+  ui->pushButtonMove->setEnabled( ui->tableWidgetInput->selectionModel()->selectedRows().count() > 0 );
+  bool output = (ui->tableWidgetInput->rowCount() > 0);
+  ui->tableWidgetOutput->setEnabled( output );
+  ui->dateTimeOutputBegin->setEnabled( output );
+  ui->dateTimeOutputEnd->setEnabled( output );
+  ui->pushButtonSave->setEnabled( output );
+
+  bool contains_tf = !ui->tableWidgetInput->findItems( "/tf", Qt::MatchExactly ).empty();
+  ui->pushButtonFilterTF->setEnabled( ui->checkBoxFilterTF->isChecked() && contains_tf );
+}
+
 void RosbagEditor::on_pushButtonMove_pressed()
 {
     QModelIndexList selected_input  = ui->tableWidgetInput->selectionModel()->selectedRows();
@@ -141,22 +155,19 @@ void RosbagEditor::on_pushButtonMove_pressed()
         }
     }
 
-    QModelIndexList selected_output = ui->tableWidgetOutput->selectionModel()->selectedRows();
-    ui->pushButtonMove->setEnabled( false );
+    ui->tableWidgetInput->selectionModel()->clearSelection();
 
-    ui->tableWidgetOutput->setEnabled( true );
     ui->pushButtonSave->setEnabled( ui->tableWidgetOutput->rowCount() );
 
-    ui->dateTimeOutputBegin->setEnabled( true );
     ui->dateTimeOutputBegin->setDateTimeRange(ui->dateTimeInputBegin->dateTime(),
                                               ui->dateTimeInputEnd->dateTime() );
     ui->dateTimeOutputBegin->setDateTime(ui->dateTimeInputBegin->dateTime());
 
-    ui->dateTimeOutputEnd->setEnabled( true );
     ui->dateTimeOutputEnd->setDateTimeRange(ui->dateTimeInputBegin->dateTime(),
                                             ui->dateTimeInputEnd->dateTime() );
     ui->dateTimeOutputEnd->setDateTime(ui->dateTimeInputEnd->dateTime());
 
+    changeEnabledWidgets();
 }
 
 void RosbagEditor::on_tableWidgetInput_itemSelectionChanged()
@@ -179,8 +190,9 @@ void RosbagEditor::on_pushButtonRemove_pressed()
         ui->tableWidgetOutput->model()->removeRow(indexes.first().row());
     }
 
-    ui->pushButtonSave->setEnabled( ui->tableWidgetOutput->rowCount() );
     ui->tableWidgetOutput->sortItems(0);
+
+    changeEnabledWidgets();
 }
 
 void RosbagEditor::on_pushButtonSave_pressed()
@@ -290,4 +302,15 @@ void RosbagEditor::on_dateTimeOutputBegin_dateTimeChanged(const QDateTime &dateT
     {
         ui->dateTimeOutputEnd->setDateTime( dateTime );
     }
+}
+
+void RosbagEditor::on_checkBoxFilterTF_toggled(bool checked)
+{
+  bool contains_tf = !ui->tableWidgetInput->findItems( "/tf", Qt::MatchExactly ).empty();
+  ui->pushButtonFilterTF->setEnabled( checked && contains_tf );
+}
+
+void RosbagEditor::on_pushButtonFilterTF_pressed()
+{
+
 }
