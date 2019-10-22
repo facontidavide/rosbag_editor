@@ -28,7 +28,7 @@ private slots:
 
     void on_tableWidgetInput_itemSelectionChanged();
 
-    void on_listWidgetOutput_itemSelectionChanged();
+    void on_tableWidgetOutput_itemSelectionChanged();
 
     void on_pushButtonRemove_pressed();
 

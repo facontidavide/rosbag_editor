@@ -16,6 +16,7 @@
 #include <QListWidget>
 #include <QStatusBar>
 #include <QFileInfo>
+#include <QLineEdit>
 #include <QProgressDialog>
 
 RosbagEditor::RosbagEditor(QWidget *parent) :
@@ -60,7 +61,7 @@ void RosbagEditor::on_pushButtonLoad_pressed()
 
     try{
         ui->tableWidgetInput->setRowCount(0);
-        ui->listWidgetOutput->clear();
+        ui->tableWidgetOutput->setRowCount(0);
         _bag.close();
         _bag.open( filename.toStdString() );
     }
@@ -130,17 +131,21 @@ void RosbagEditor::on_pushButtonMove_pressed()
         QTableWidgetItem* item = ui->tableWidgetInput->item( index.row(), 0);
         QString topic_name = item->text();
 
-        if( ui->listWidgetOutput->findItems( topic_name, Qt::MatchExactly ).isEmpty() )
+        if( ui->tableWidgetOutput->findItems( topic_name, Qt::MatchExactly ).isEmpty() )
         {
-            ui->listWidgetOutput->addItem(topic_name);
+          int row = ui->tableWidgetOutput->rowCount();
+          ui->tableWidgetOutput->setRowCount(row+1);
+          ui->tableWidgetOutput->setItem(row, 0, new QTableWidgetItem(topic_name) );
+          QLineEdit* topic_editor = new QLineEdit(ui->tableWidgetOutput);
+          ui->tableWidgetOutput->setCellWidget(row, 1, topic_editor);
         }
     }
 
-    QModelIndexList selected_output = ui->listWidgetOutput->selectionModel()->selectedRows();
+    QModelIndexList selected_output = ui->tableWidgetOutput->selectionModel()->selectedRows();
     ui->pushButtonMove->setEnabled( false );
 
-    ui->listWidgetOutput->setEnabled( true );
-    ui->pushButtonSave->setEnabled( ui->listWidgetOutput->count() );
+    ui->tableWidgetOutput->setEnabled( true );
+    ui->pushButtonSave->setEnabled( ui->tableWidgetOutput->rowCount() );
 
     ui->dateTimeOutputBegin->setEnabled( true );
     ui->dateTimeOutputBegin->setDateTimeRange(ui->dateTimeInputBegin->dateTime(),
@@ -160,22 +165,22 @@ void RosbagEditor::on_tableWidgetInput_itemSelectionChanged()
     ui->pushButtonMove->setEnabled( select->hasSelection() );
 }
 
-void RosbagEditor::on_listWidgetOutput_itemSelectionChanged()
+void RosbagEditor::on_tableWidgetOutput_itemSelectionChanged()
 {
-    QItemSelectionModel *select = ui->listWidgetOutput->selectionModel();
+    QItemSelectionModel *select = ui->tableWidgetOutput->selectionModel();
     ui->pushButtonRemove->setEnabled( select->hasSelection() );
 }
 
 void RosbagEditor::on_pushButtonRemove_pressed()
 {
     QModelIndexList indexes;
-    while((indexes = ui->listWidgetOutput->selectionModel()->selectedIndexes()).size())
+    while((indexes = ui->tableWidgetOutput->selectionModel()->selectedIndexes()).size())
     {
-        ui->listWidgetOutput->model()->removeRow(indexes.first().row());
+        ui->tableWidgetOutput->model()->removeRow(indexes.first().row());
     }
 
-    ui->pushButtonSave->setEnabled( ui->listWidgetOutput->count() );
-    ui->listWidgetOutput->sortItems();
+    ui->pushButtonSave->setEnabled( ui->tableWidgetOutput->rowCount() );
+    ui->tableWidgetOutput->sortItems(0);
 }
 
 void RosbagEditor::on_pushButtonSave_pressed()
@@ -217,19 +222,29 @@ void RosbagEditor::on_pushButtonSave_pressed()
       out_bag.setCompression( rosbag::CompressionType::BZ2 );
     }
 
-    std::vector<std::string> topics;
+    std::vector<std::string> input_topics;
+    std::map<std::string,std::string> topis_renamed;
 
-    for(int i = 0; i < ui->listWidgetOutput->count(); ++i)
+    for(int row = 0; row < ui->tableWidgetOutput->rowCount(); ++row)
     {
-        QListWidgetItem* item = ui->listWidgetOutput->item(i);
-        topics.push_back( item->text().toStdString() );
+        std::string name =  ui->tableWidgetOutput->item(row,0)->text().toStdString();
+        QLineEdit* line_edit = qobject_cast<QLineEdit*>(ui->tableWidgetOutput->cellWidget(row, 1));
+        std::string renamed = line_edit->text().toStdString();
+        input_topics.push_back( name );
+        if( renamed.empty())
+        {
+          topis_renamed.insert( std::make_pair(name,name));
+        }
+        else{
+          topis_renamed.insert( std::make_pair(name,renamed));
+        }
     }
 
     double begin_time = std::floor(-0.001 + 0.001*static_cast<double>(ui->dateTimeOutputBegin->dateTime().toMSecsSinceEpoch()));
     double end_time   = std::ceil(  0.001 +  0.001*static_cast<double>(ui->dateTimeOutputEnd->dateTime().toMSecsSinceEpoch()));
 
 
-    rosbag::View bag_view( _bag, rosbag::TopicQuery(topics),
+    rosbag::View bag_view( _bag, rosbag::TopicQuery(input_topics),
                           ros::Time( begin_time ), ros::Time( end_time ) );
 
     QProgressDialog progress_dialog;
@@ -248,7 +263,8 @@ void RosbagEditor::on_pushButtonSave_pressed()
         QApplication::processEvents();
       }
 
-      out_bag.write( msg.getTopic(), msg.getTime(), msg, msg.getConnectionHeader());
+      const auto& name = topis_renamed.find(msg.getTopic())->second;
+      out_bag.write( name, msg.getTime(), msg, msg.getConnectionHeader());
     }
     out_bag.close();
 

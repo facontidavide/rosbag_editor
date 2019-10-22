@@ -272,7 +272,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QListWidget" name="listWidgetOutput">
+         <widget class="QTableWidget" name="tableWidgetOutput">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -282,6 +282,28 @@
           <property name="selectionMode">
            <enum>QAbstractItemView::ExtendedSelection</enum>
           </property>
+          <attribute name="horizontalHeaderMinimumSectionSize">
+           <number>150</number>
+          </attribute>
+          <attribute name="horizontalHeaderDefaultSectionSize">
+           <number>200</number>
+          </attribute>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <column>
+           <property name="text">
+            <string>Topic Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Renamed topic (optional)</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item>
