@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(rosbag_editor)
 
 
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 find_package(catkin REQUIRED COMPONENTS
   rosbag
@@ -45,6 +45,8 @@ add_executable(rosbag_editor
     src/main.cpp
     src/rosbag_editor.cpp
     src/rosbag_editor.ui
+    src/filter_frames.cpp
+    src/filter_frames.ui
     desktop/resources.qrc
     )
 

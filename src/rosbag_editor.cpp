@@ -2,6 +2,8 @@
 #include "ui_rosbag_editor.h"
 
 #include <topic_tools/shape_shifter.h>
+#include <tf/tfMessage.h>
+#include <tf2_msgs/TFMessage.h>
 
 #include <QDir>
 #include <QString>
@@ -19,6 +21,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QProgressDialog>
+#include "filter_frames.h"
 
 RosbagEditor::RosbagEditor(QWidget *parent) :
     QMainWindow(parent),
@@ -116,6 +119,7 @@ void RosbagEditor::on_pushButtonLoad_pressed()
         ui->tableWidgetInput->setItem(row, 1, type_item);
         row++;
     }
+    changeEnabledWidgets();
 }
 
 void RosbagEditor::changeEnabledWidgets()
@@ -276,7 +280,40 @@ void RosbagEditor::on_pushButtonSave_pressed()
       }
 
       const auto& name = topis_renamed.find(msg.getTopic())->second;
-      out_bag.write( name, msg.getTime(), msg, msg.getConnectionHeader());
+
+      auto removeTransform = [&](auto tf)
+      {
+        for (int i=0; i < tf->transforms.size(); i++)
+        {
+          auto frame = std::make_pair(tf->transforms[i].header.frame_id,
+                                      tf->transforms[i].child_frame_id);
+          if( _filtered_frames.count(frame) )
+          {
+            tf->transforms.erase( tf->transforms.begin() + i );
+            i--;
+          }
+        }
+        out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
+      };
+
+
+      if( msg.getTopic() == "/tf" && _filtered_frames.size() > 0)
+      {
+        tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
+        if (tf)
+        {
+          removeTransform(tf);
+        }
+
+        tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
+        if (tf2)
+        {
+          removeTransform(tf2);
+        }
+      }
+      else{
+        out_bag.write( name, msg.getTime(), msg, msg.getConnectionHeader());
+      }
     }
     out_bag.close();
 
@@ -312,5 +349,7 @@ void RosbagEditor::on_checkBoxFilterTF_toggled(bool checked)
 
 void RosbagEditor::on_pushButtonFilterTF_pressed()
 {
+  FilterFrames dialog(_bag, _filtered_frames, this);
+  dialog.exec();
 
 }

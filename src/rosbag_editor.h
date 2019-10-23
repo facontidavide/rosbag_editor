@@ -48,6 +48,7 @@ private slots:
     QString _previous_load_path;
     QString _previous_save_path;
     rosbag::Bag _bag;
+    std::set<std::pair<std::string,std::string>> _filtered_frames;
     void changeEnabledWidgets();
 };
 
