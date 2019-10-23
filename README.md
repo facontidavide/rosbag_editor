@@ -4,8 +4,9 @@ If you need to:
 
 - remove one or more topics from a [rosbag](http://wiki.ros.org/rosbag).
 - change the duration of the rosbag (initial and final time).
-- rename a topic
-- add/change/remove compression.
+- rename a topic.
+- change the compression type.
+- remove specific transformations from your **/tf**.
 
 and, most importantly:
 
