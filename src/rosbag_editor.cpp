@@ -28,21 +28,21 @@ RosbagEditor::RosbagEditor(QWidget *parent) :
     ui(new Ui::RosbagEditor)
 {
     QApplication::setWindowIcon(QIcon("://rosbag_editor.png"));
-    QSettings settings;
+    ui->setupUi(this);
 
-    restoreGeometry(settings.value("RosbagEditor/geometry").toByteArray());
-    restoreState(settings.value("RosbagEditor/windowState").toByteArray());
-
+    QSettings settings("DavideFaconti", "rosbag_editor");
     _previous_load_path = settings.value("RosbagEditor/prevLoadPath", QDir::currentPath()).toString();
     _previous_save_path = settings.value("RosbagEditor/prevSavePath", _previous_load_path).toString();
 
-    ui->setupUi(this);
     ui->radioNoCompression->setChecked(true);
+
+    restoreGeometry(settings.value("RosbagEditor/geometry").toByteArray());
+    restoreState(settings.value("RosbagEditor/windowState").toByteArray());
 }
 
 void RosbagEditor::closeEvent(QCloseEvent *event)
 {
-    QSettings settings;
+    QSettings settings("DavideFaconti", "rosbag_editor");
     settings.setValue("RosbagEditor/geometry", saveGeometry());
     settings.setValue("RosbagEditor/windowState", saveState());
     QMainWindow::closeEvent(event);

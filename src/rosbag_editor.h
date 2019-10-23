@@ -7,6 +7,7 @@
 
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
+#include <QSettings>
 
 namespace Ui {
 class RosbagEditor;
@@ -22,6 +23,7 @@ public:
 
 private slots:
     void closeEvent(QCloseEvent *event);
+
     void on_pushButtonLoad_pressed();
 
     void on_pushButtonMove_pressed();
