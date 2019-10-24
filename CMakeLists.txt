@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   rosbag
   rosbag_storage
   roscpp
+  tf2_msgs
+  tf
 )
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -20,7 +22,7 @@ find_package(Qt5 REQUIRED COMPONENTS Core Widgets)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES rosbag_editor
-  CATKIN_DEPENDS rosbag rosbag_storage roscpp
+  CATKIN_DEPENDS rosbag rosbag_storage roscpp tf2_msgs tf
 #  DEPENDS system_lib
 )
 

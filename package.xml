@@ -16,16 +16,22 @@
   <build_depend>rosbag</build_depend>
   <build_depend>rosbag_storage</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>tf2_msgs</build_depend>
+  <build_depend>tf</build_depend>
 
   <build_export_depend>qtbase5-dev</build_export_depend>
   <build_export_depend>rosbag</build_export_depend>
   <build_export_depend>rosbag_storage</build_export_depend>
   <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>tf2_msgs</build_export_depend>
+  <build_export_depend>tf</build_export_depend>
 
   <exec_depend>qtbase5-dev</exec_depend>
   <exec_depend>rosbag</exec_depend>
   <exec_depend>rosbag_storage</exec_depend>
   <exec_depend>roscpp</exec_depend>
+  <exec_depend>tf2_msgs</exec_depend>
+  <exec_depend>tf</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
