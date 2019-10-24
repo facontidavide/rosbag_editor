@@ -271,6 +271,8 @@ void RosbagEditor::on_pushButtonSave_pressed()
     int msg_count = 0;
     progress_dialog.setRange(0, bag_view.size()-1);
 
+    bool do_tf_filtering = _filtered_frames.size() > 0 && ui->checkBoxFilterTF->isChecked();
+
     for(const rosbag::MessageInstance& msg: bag_view)
     {
       if( msg_count++ %100 == 0)
@@ -293,22 +295,23 @@ void RosbagEditor::on_pushButtonSave_pressed()
             i--;
           }
         }
-        out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
       };
 
 
-      if( msg.getTopic() == "/tf" && _filtered_frames.size() > 0)
+      if( msg.getTopic() == "/tf" && do_tf_filtering )
       {
         tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
         if (tf)
         {
           removeTransform(tf);
+          out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
         }
 
         tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
         if (tf2)
         {
           removeTransform(tf2);
+          out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
         }
       }
       else{
