@@ -2,8 +2,8 @@
 Changelog for package rosbag_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.0 (2019-10-24)
+------------------
 * add TF filter
 * add the ability to rename topics
 * Contributors: Davide Faconti
