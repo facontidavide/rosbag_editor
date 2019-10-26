@@ -283,15 +283,15 @@ void RosbagEditor::on_pushButtonSave_pressed()
 
       const auto& name = topis_renamed.find(msg.getTopic())->second;
 
-      auto removeTransform = [&](auto tf)
+      auto removeTransform = [&](std::vector<geometry_msgs::TransformStamped>& transforms)
       {
-        for (int i=0; i < tf->transforms.size(); i++)
+        for (int i=0; i < transforms.size(); i++)
         {
-          auto frame = std::make_pair(tf->transforms[i].header.frame_id,
-                                      tf->transforms[i].child_frame_id);
+          auto frame = std::make_pair(transforms[i].header.frame_id,
+                                      transforms[i].child_frame_id);
           if( _filtered_frames.count(frame) )
           {
-            tf->transforms.erase( tf->transforms.begin() + i );
+            transforms.erase( transforms.begin() + i );
             i--;
           }
         }
@@ -303,14 +303,14 @@ void RosbagEditor::on_pushButtonSave_pressed()
         tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
         if (tf)
         {
-          removeTransform(tf);
+          removeTransform(tf->transforms);
           out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
         }
 
         tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
         if (tf2)
         {
-          removeTransform(tf2);
+          removeTransform(tf2->transforms);
           out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
         }
       }
