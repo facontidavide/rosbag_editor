@@ -2,8 +2,8 @@
 Changelog for package rosbag_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.2 (2019-10-26)
+------------------
 * downgrade to c++11
 * Contributors: Davide Faconti
 
