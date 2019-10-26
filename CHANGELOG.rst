@@ -2,6 +2,11 @@
 Changelog for package rosbag_editor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* downgrade to c++11
+* Contributors: Davide Faconti
+
 0.4.0 (2019-10-24)
 ------------------
 * add TF filter
