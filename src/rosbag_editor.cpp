@@ -86,10 +86,6 @@ void RosbagEditor::on_pushButtonLoad_pressed()
     rosbag::View bag_view ( _bag );
     auto connections = bag_view.getConnections();
 
-    ui->tableWidgetInput->setRowCount(connections.size());
-    ui->tableWidgetInput->setColumnCount(2);
-    ui->tableWidgetInput->setEnabled(true);
-
     QDateTime datetime_begin = QDateTime::fromMSecsSinceEpoch( bag_view.getBeginTime().toSec()*1000 );
     ui->dateTimeInputBegin->setDateTime(datetime_begin);
 
@@ -102,9 +98,13 @@ void RosbagEditor::on_pushButtonLoad_pressed()
     for(std::size_t i = 0; i < connections.size(); i++ )
     {
       const rosbag::ConnectionInfo* connection = connections[i];
-     connections_ordered.insert( std::make_pair(QString::fromStdString(connection->topic),
-                                                QString::fromStdString(connection->datatype) ) );
+      connections_ordered.insert( std::make_pair(QString::fromStdString(connection->topic),
+                                                 QString::fromStdString(connection->datatype) ) );
     }
+
+    ui->tableWidgetInput->setRowCount(connections_ordered.size());
+    ui->tableWidgetInput->setColumnCount(2);
+    ui->tableWidgetInput->setEnabled(true);
 
     int row = 0;
     for(const auto conn: connections_ordered )
