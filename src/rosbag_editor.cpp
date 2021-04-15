@@ -133,6 +133,9 @@ void RosbagEditor::changeEnabledWidgets()
 
   bool contains_tf = !ui->tableWidgetInput->findItems( "/tf", Qt::MatchExactly ).empty();
   ui->pushButtonFilterTF->setEnabled( ui->checkBoxFilterTF->isChecked() && contains_tf );
+
+  bool contains_tf_static = !ui->tableWidgetInput->findItems( "/tf_static", Qt::MatchExactly ).empty();
+  ui->pushButtonFilterTFStatic->setEnabled( ui->checkBoxFilterTFStatic->isChecked() && contains_tf_static );
 }
 
 void RosbagEditor::on_pushButtonMove_pressed()
@@ -272,6 +275,7 @@ void RosbagEditor::on_pushButtonSave_pressed()
     progress_dialog.setRange(0, bag_view.size()-1);
 
     bool do_tf_filtering = _filtered_frames.size() > 0 && ui->checkBoxFilterTF->isChecked();
+    bool do_tf_static_filtering = _filtered_frames.size() > 0 && ui->checkBoxFilterTFStatic->isChecked();
 
     for(const rosbag::MessageInstance& msg: bag_view)
     {
@@ -298,18 +302,19 @@ void RosbagEditor::on_pushButtonSave_pressed()
       };
 
 
-      if( msg.getTopic() == "/tf" && do_tf_filtering )
+      if( (msg.getTopic() == "/tf" && do_tf_filtering) || (msg.getTopic() == "/tf_static" && do_tf_static_filtering) )
       {
-        tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
-        if (tf)
+        const std::string& datatype = msg.getDataType();
+        if (datatype == "tf/tfMessage")
         {
+          tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
           removeTransform(tf->transforms);
           out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
         }
 
-        tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
-        if (tf2)
+        if (datatype == "tf2_msgs/TFMessage")
         {
+          tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
           removeTransform(tf2->transforms);
           out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
         }
@@ -352,7 +357,20 @@ void RosbagEditor::on_checkBoxFilterTF_toggled(bool checked)
 
 void RosbagEditor::on_pushButtonFilterTF_pressed()
 {
-  FilterFrames dialog(_bag, _filtered_frames, this);
+  FilterFrames dialog(_bag, "/tf", _filtered_frames, this);
+  dialog.exec();
+
+}
+
+void RosbagEditor::on_checkBoxFilterTFStatic_toggled(bool checked)
+{
+  bool contains_tf_static = !ui->tableWidgetInput->findItems( "/tf_static", Qt::MatchExactly ).empty();
+  ui->pushButtonFilterTFStatic->setEnabled( checked && contains_tf_static );
+}
+
+void RosbagEditor::on_pushButtonFilterTFStatic_pressed()
+{
+  FilterFrames dialog(_bag, "/tf_static", _filtered_frames, this);
   dialog.exec();
 
 }

@@ -44,6 +44,10 @@ private slots:
 
     void on_pushButtonFilterTF_pressed();
 
+    void on_checkBoxFilterTFStatic_toggled(bool checked);
+
+    void on_pushButtonFilterTFStatic_pressed();
+
    private:
     Ui::RosbagEditor *ui;
     QString _loade_filename;
