@@ -309,14 +309,16 @@ void RosbagEditor::on_pushButtonSave_pressed()
         {
           tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
           removeTransform(tf->transforms);
-          out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
+          if(!tf->transforms.empty())
+            out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
         }
 
         if (datatype == "tf2_msgs/TFMessage")
         {
           tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
           removeTransform(tf2->transforms);
-          out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
+          if(!tf2->transforms.empty())
+            out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
         }
       }
       else{
