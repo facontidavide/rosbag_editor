@@ -304,6 +304,11 @@
             <string>Renamed topic (optional)</string>
            </property>
           </column>
+          <column>
+           <property name="text">
+            <string>Renamed frame_id (optional)</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item>
