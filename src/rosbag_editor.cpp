@@ -4,6 +4,7 @@
 #include <topic_tools/shape_shifter.h>
 #include <tf/tfMessage.h>
 #include <tf2_msgs/TFMessage.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include <QDir>
 #include <QString>
@@ -133,6 +134,9 @@ void RosbagEditor::changeEnabledWidgets()
 
   bool contains_tf = !ui->tableWidgetInput->findItems( "/tf", Qt::MatchExactly ).empty();
   ui->pushButtonFilterTF->setEnabled( ui->checkBoxFilterTF->isChecked() && contains_tf );
+
+  bool contains_tf_static = !ui->tableWidgetInput->findItems( "/tf_static", Qt::MatchExactly ).empty();
+  ui->pushButtonFilterTFStatic->setEnabled( ui->checkBoxFilterTFStatic->isChecked() && contains_tf_static );
 }
 
 void RosbagEditor::on_pushButtonMove_pressed()
@@ -156,6 +160,8 @@ void RosbagEditor::on_pushButtonMove_pressed()
           ui->tableWidgetOutput->setItem(row, 0, new QTableWidgetItem(topic_name) );
           QLineEdit* topic_editor = new QLineEdit(ui->tableWidgetOutput);
           ui->tableWidgetOutput->setCellWidget(row, 1, topic_editor);
+          QLineEdit* topic_editor2 = new QLineEdit(ui->tableWidgetOutput);
+          ui->tableWidgetOutput->setCellWidget(row, 2, topic_editor2);
         }
     }
 
@@ -240,13 +246,19 @@ void RosbagEditor::on_pushButtonSave_pressed()
 
     std::vector<std::string> input_topics;
     std::map<std::string,std::string> topis_renamed;
+    std::map<std::string,std::string> frameid_renamed;
 
     for(int row = 0; row < ui->tableWidgetOutput->rowCount(); ++row)
     {
         std::string name =  ui->tableWidgetOutput->item(row,0)->text().toStdString();
         QLineEdit* line_edit = qobject_cast<QLineEdit*>(ui->tableWidgetOutput->cellWidget(row, 1));
         std::string renamed = line_edit->text().toStdString();
+        QLineEdit* line_edit2 = qobject_cast<QLineEdit*>(ui->tableWidgetOutput->cellWidget(row, 2));
+        std::string frameid = line_edit2->text().toStdString();
         input_topics.push_back( name );
+        if( ! frameid.empty()){
+          frameid_renamed.insert(std::make_pair(name, frameid));
+        }
         if( renamed.empty())
         {
           topis_renamed.insert( std::make_pair(name,name));
@@ -272,6 +284,7 @@ void RosbagEditor::on_pushButtonSave_pressed()
     progress_dialog.setRange(0, bag_view.size()-1);
 
     bool do_tf_filtering = _filtered_frames.size() > 0 && ui->checkBoxFilterTF->isChecked();
+    bool do_tf_static_filtering = _filtered_frames.size() > 0 && ui->checkBoxFilterTFStatic->isChecked();
 
     for(const rosbag::MessageInstance& msg: bag_view)
     {
@@ -298,24 +311,35 @@ void RosbagEditor::on_pushButtonSave_pressed()
       };
 
 
-      if( msg.getTopic() == "/tf" && do_tf_filtering )
+      const std::string& datatype = msg.getDataType();
+      if( (msg.getTopic() == "/tf" && do_tf_filtering) || (msg.getTopic() == "/tf_static" && do_tf_static_filtering) )
       {
-        tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
-        if (tf)
+        if (datatype == "tf/tfMessage")
         {
+          tf::tfMessage::Ptr tf = msg.instantiate<tf::tfMessage>();
           removeTransform(tf->transforms);
-          out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
+          if(!tf->transforms.empty())
+            out_bag.write( name, msg.getTime(), tf, msg.getConnectionHeader());
         }
 
-        tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
-        if (tf2)
+        if (datatype == "tf2_msgs/TFMessage")
         {
+          tf2_msgs::TFMessage::Ptr tf2 = msg.instantiate<tf2_msgs::TFMessage>();
           removeTransform(tf2->transforms);
-          out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
+          if(!tf2->transforms.empty())
+            out_bag.write( name, msg.getTime(), tf2, msg.getConnectionHeader());
         }
       }
       else{
-        out_bag.write( name, msg.getTime(), msg, msg.getConnectionHeader());
+        if(frameid_renamed.find(msg.getTopic()) != frameid_renamed.end()){
+          if( datatype == "sensor_msgs/PointCloud2"){
+            sensor_msgs::PointCloud2::Ptr mm = msg.instantiate<sensor_msgs::PointCloud2>();
+            mm->header.frame_id=frameid_renamed.find(msg.getTopic())->second;
+            out_bag.write( name, msg.getTime(), mm, msg.getConnectionHeader());
+          }
+        }else{
+          out_bag.write( name, msg.getTime(), msg, msg.getConnectionHeader());
+        }
       }
     }
     out_bag.close();
@@ -352,7 +376,20 @@ void RosbagEditor::on_checkBoxFilterTF_toggled(bool checked)
 
 void RosbagEditor::on_pushButtonFilterTF_pressed()
 {
-  FilterFrames dialog(_bag, _filtered_frames, this);
+  FilterFrames dialog(_bag, "/tf", _filtered_frames, this);
+  dialog.exec();
+
+}
+
+void RosbagEditor::on_checkBoxFilterTFStatic_toggled(bool checked)
+{
+  bool contains_tf_static = !ui->tableWidgetInput->findItems( "/tf_static", Qt::MatchExactly ).empty();
+  ui->pushButtonFilterTFStatic->setEnabled( checked && contains_tf_static );
+}
+
+void RosbagEditor::on_pushButtonFilterTFStatic_pressed()
+{
+  FilterFrames dialog(_bag, "/tf_static", _filtered_frames, this);
   dialog.exec();
 
 }

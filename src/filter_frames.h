@@ -17,6 +17,7 @@ class FilterFrames : public QDialog
   using FramesSet = std::set<std::pair<std::string,std::string>>;
 
   explicit FilterFrames(const rosbag::Bag& bag,
+                        const std::string& tf,
                         FramesSet &filtered_frames,
                         QWidget *parent = nullptr );
 

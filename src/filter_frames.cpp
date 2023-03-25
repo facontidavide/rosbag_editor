@@ -8,13 +8,14 @@
 #include "ui_filter_frames.h"
 
 FilterFrames::FilterFrames(const rosbag::Bag& bag,
+                           const std::string& tf,
                            FilterFrames::FramesSet& filtered_frames,
                            QWidget* parent)
     : QDialog(parent), ui(new Ui::FilterFrames), _bag(bag), _frames_to_filter(filtered_frames)
 {
   ui->setupUi(this);
 
-  std::vector<std::string> topics = {"/tf"};
+  std::vector<std::string> topics = {tf};
   rosbag::View bag_view(bag, rosbag::TopicQuery(topics));
 
   QProgressDialog progress_dialog;
